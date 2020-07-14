@@ -1,8 +1,16 @@
 import React from "react";
-// import * as BooksAPI from './BooksAPI'
+import * as BooksAPI from "./BooksAPI";
 import "./App.css";
 import { Route } from "react-router-dom";
-import { Link } from "react-router-dom";
+// import { Link } from "react-router-dom";
+import ShelfList from "./ShelfList";
+import Search from "./Search";
+
+const bookshelves = [
+  { currentlyReading: "Currently Reading" },
+  { wantToRead: "Want To Read" },
+  { read: "Read" },
+];
 
 class BooksApp extends React.Component {
   state = {
@@ -12,6 +20,57 @@ class BooksApp extends React.Component {
      * users can use the browser's back and forward buttons to navigate between
      * pages, as well as provide a good URL they can bookmark and share.
      */
+    Books: [],
+    searchBooks: [],
+  };
+
+  componentDidMount = () => {
+    BooksAPI.getAll().then((books) => {
+      this.setState({ Books: books });
+      //   this.clearSearch();
+    });
+  };
+
+  fetchSearchBooks = (query) => {
+    BooksAPI.search(query).then((searchBooks) => {
+      this.state.Books.forEach((book) => {
+        searchBooks.forEach((searchBook) => {
+          if (searchBook.id === book.id) {
+            searchBook.shelf = book.shelf;
+          } else if (!searchBook.shelf) {
+            searchBook.shelf = "none";
+          }
+        });
+      });
+
+      this.setState({ searchBooks: searchBooks });
+    });
+  };
+
+  clearSearch = () => {
+    this.setState({
+      searchBooks: [],
+    });
+  };
+
+  updateBook = (book, shelf) => {
+    // console.log(shelf);
+    BooksAPI.update(book, shelf);
+
+    // filter out and remove the selected book
+    this.setState((currentState) => ({
+      Books: currentState.Books.filter(
+        (filterBooks) => filterBooks.id !== book.id
+      ),
+    }));
+
+    // if shelf is not none, change the shelf of the 'book' and concat to state
+    if (shelf !== "none") {
+      book.shelf = shelf;
+      this.setState((currentState) => ({
+        Books: currentState.Books.concat([book]),
+      }));
+    }
   };
 
   render() {
@@ -20,27 +79,12 @@ class BooksApp extends React.Component {
         <Route
           path="/search"
           render={() => (
-            <div className="search-books">
-              <div className="search-books-bar">
-                <Link to="/">
-                  <button className="close-search">Close</button>
-                </Link>
-                <div className="search-books-input-wrapper">
-                  {/*
-                          NOTES: The search from BooksAPI is limited to a particular set of search terms.
-                          You can find these search terms here:
-                          https://github.com/udacity/reactnd-project-myreads-starter/blob/master/SEARCH_TERMS.md
-      
-                          However, remember that the BooksAPI.search method DOES search by title or author. So, don't worry if
-                          you don't find a specific author or title. Every search is limited by search terms.
-                        */}
-                  <input type="text" placeholder="Search by title or author" />
-                </div>
-              </div>
-              <div className="search-books-results">
-                <ol className="books-grid" />
-              </div>
-            </div>
+            <Search
+              updateBook={this.updateBook}
+              searchBooks={this.state.searchBooks}
+              fetchSearchBooks={this.fetchSearchBooks}
+              clearSearch={this.clearSearch}
+            />
           )}
         />
 
@@ -48,61 +92,11 @@ class BooksApp extends React.Component {
           exact
           path="/"
           render={() => (
-            <div className="list-books">
-              <div className="list-books-title">
-                <h1>MyReads</h1>
-              </div>
-              <div className="list-books-content">
-                <div>
-                  <div className="bookshelf">
-                    <h2 className="bookshelf-title">Currently Reading</h2>
-                    <div className="bookshelf-books">
-                      <ol className="books-grid">
-                        <li>
-                          <div className="book">
-                            <div className="book-top">
-                              <div
-                                className="book-cover"
-                                style={{
-                                  width: 128,
-                                  height: 193,
-                                  backgroundImage:
-                                    'url("http://books.google.com/books/content?id=PGR2AwAAQBAJ&printsec=frontcover&img=1&zoom=1&imgtk=AFLRE73-GnPVEyb7MOCxDzOYF1PTQRuf6nCss9LMNOSWBpxBrz8Pm2_mFtWMMg_Y1dx92HT7cUoQBeSWjs3oEztBVhUeDFQX6-tWlWz1-feexS0mlJPjotcwFqAg6hBYDXuK_bkyHD-y&source=gbs_api")',
-                                }}
-                              />
-                              <div className="book-shelf-changer">
-                                <select>
-                                  <option value="move" disabled>
-                                    Move to...
-                                  </option>
-                                  <option value="currentlyReading">
-                                    Currently Reading
-                                  </option>
-                                  <option value="wantToRead">
-                                    Want to Read
-                                  </option>
-                                  <option value="read">Read</option>
-                                  <option value="none">None</option>
-                                </select>
-                              </div>
-                            </div>
-                            <div className="book-title">
-                              To Kill a Mockingbird
-                            </div>
-                            <div className="book-authors">Harper Lee</div>
-                          </div>
-                        </li>
-                      </ol>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              <div className="open-search">
-                <Link to="/search">
-                  <button>Add a book</button>
-                </Link>
-              </div>
-            </div>
+            <ShelfList
+              books={this.state.Books}
+              bookshelves={bookshelves}
+              updateBook={this.updateBook}
+            />
           )}
         />
       </div>
