@@ -14,12 +14,6 @@ const bookshelves = [
 
 class BooksApp extends React.Component {
   state = {
-    /**
-     * TODO: Instead of using this state variable to keep track of which page
-     * we're on, use the URL in the browser's address bar. This will ensure that
-     * users can use the browser's back and forward buttons to navigate between
-     * pages, as well as provide a good URL they can bookmark and share.
-     */
     Books: [],
     searchBooks: [],
   };
@@ -27,16 +21,17 @@ class BooksApp extends React.Component {
   componentDidMount = () => {
     BooksAPI.getAll().then((books) => {
       this.setState({ Books: books });
-      //   this.clearSearch();
     });
   };
 
   fetchSearchBooks = (query) => {
-    BooksAPI.search(query).then((searchBooks) => {
-    //   console.log(searchBooks);
-      if (!searchBooks.error) {
+    BooksAPI.search(query)
+      .then((searchBooks) => {
+        // if returns a list of books
+        if (!searchBooks.error) {
           searchBooks.forEach((searchBook) => {
             this.state.Books.forEach((book) => {
+              // if id match in local books, update shelf
               if (searchBook.id === book.id) {
                 searchBook.shelf = book.shelf;
               } else if (!searchBook.shelf) {
@@ -44,25 +39,17 @@ class BooksApp extends React.Component {
               }
             });
           });
-      } else {
-        searchBooks = []
-      }
+        } else {
+          // no search results
+          searchBooks = [];
+        }
 
-
-      //   this.state.Books.forEach((book) => {
-      //     searchBooks.forEach((searchBook) => {
-      //       if (searchBook.id === book.id) {
-      //         searchBook.shelf = book.shelf;
-      //       } else if (!searchBook.shelf) {
-      //         searchBook.shelf = "none";
-      //       }
-      //     });
-      //   });
-
-      this.setState({ searchBooks: searchBooks });
-    }).catch((e) => {
-        console.log(e)
-    });
+        // save results
+        this.setState({ searchBooks: searchBooks });
+      })
+      .catch((e) => {
+        console.log(e);
+      });
   };
 
   clearSearch = () => {
@@ -72,7 +59,6 @@ class BooksApp extends React.Component {
   };
 
   updateBook = (book, shelf) => {
-    // console.log(shelf);
     BooksAPI.update(book, shelf);
 
     // filter out and remove the selected book

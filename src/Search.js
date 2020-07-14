@@ -14,9 +14,9 @@ class Search extends Component {
 
     // fetch API if search query is more than 1 char long
     if (query.length > 1) {
-    //   console.log("query", query);
       this.props.fetchSearchBooks(query);
     } else if (query.length === 0) {
+      // clear search if query is empty
       this.props.clearSearch();
     }
   };
@@ -24,7 +24,6 @@ class Search extends Component {
   render() {
     const { updateBook, searchBooks, clearSearch } = this.props;
 
-    // console.log(searchBooks)
     return (
       <div className="search-books">
         <div className="search-books-bar">

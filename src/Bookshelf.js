@@ -10,7 +10,8 @@ class Bookshelf extends Component {
           <h2 className="bookshelf-title">{shelf}</h2>
           <div className="bookshelf-books">
             <ol className="books-grid">
-              {books
+              {// filter out books that match the shelf
+              books
                 .filter((book) => book.shelf === shelfkey)
                 .map((book) => (
                   <Book key={book.id} book={book} updateBook={updateBook} />
