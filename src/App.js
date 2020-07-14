@@ -33,17 +33,35 @@ class BooksApp extends React.Component {
 
   fetchSearchBooks = (query) => {
     BooksAPI.search(query).then((searchBooks) => {
-      this.state.Books.forEach((book) => {
-        searchBooks.forEach((searchBook) => {
-          if (searchBook.id === book.id) {
-            searchBook.shelf = book.shelf;
-          } else if (!searchBook.shelf) {
-            searchBook.shelf = "none";
-          }
-        });
-      });
+    //   console.log(searchBooks);
+      if (!searchBooks.error) {
+          searchBooks.forEach((searchBook) => {
+            this.state.Books.forEach((book) => {
+              if (searchBook.id === book.id) {
+                searchBook.shelf = book.shelf;
+              } else if (!searchBook.shelf) {
+                searchBook.shelf = "none";
+              }
+            });
+          });
+      } else {
+        searchBooks = []
+      }
+
+
+      //   this.state.Books.forEach((book) => {
+      //     searchBooks.forEach((searchBook) => {
+      //       if (searchBook.id === book.id) {
+      //         searchBook.shelf = book.shelf;
+      //       } else if (!searchBook.shelf) {
+      //         searchBook.shelf = "none";
+      //       }
+      //     });
+      //   });
 
       this.setState({ searchBooks: searchBooks });
+    }).catch((e) => {
+        console.log(e)
     });
   };
 
