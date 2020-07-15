@@ -15,7 +15,7 @@ const bookshelves = [
 class BooksApp extends React.Component {
   state = {
     Books: [],
-    searchBooks: [],
+    searchBooks: []
   };
 
   componentDidMount = () => {
@@ -27,17 +27,18 @@ class BooksApp extends React.Component {
   fetchSearchBooks = (query) => {
     BooksAPI.search(query)
       .then((searchBooks) => {
+        console.log(searchBooks)
         // if returns a list of books
         if (!searchBooks.error) {
-          searchBooks.forEach((searchBook) => {
-            this.state.Books.forEach((book) => {
-              // if id match in local books, update shelf
-              if (searchBook.id === book.id) {
-                searchBook.shelf = book.shelf;
-              } else if (!searchBook.shelf) {
-                searchBook.shelf = "none";
-              }
-            });
+          // updated - source: review #1
+          searchBooks = searchBooks.map((book) => {
+            const bookInShelf = this.state.Books.find(
+              ({ id }) => id === book.id
+            );
+            return {
+              ...book,
+              shelf: bookInShelf ? bookInShelf.shelf : "none",
+            };
           });
         } else {
           // no search results
