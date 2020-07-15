@@ -15,13 +15,27 @@ const bookshelves = [
 class BooksApp extends React.Component {
   state = {
     Books: [],
-    searchBooks: []
+    searchBooks: [],
+    query: ''
   };
 
   componentDidMount = () => {
     BooksAPI.getAll().then((books) => {
       this.setState({ Books: books });
     });
+  };
+
+  updateQuery = (e) => {
+    const query = e.target.value;
+    this.setState({ query: query });
+
+    // fetch API if search query is more than 1 char long
+    if (query.length > 1) {
+      this.fetchSearchBooks(query);
+    } else if (query.length === 0) {
+      // clear search if query is empty
+      this.clearSearch();
+    }
   };
 
   fetchSearchBooks = (query) => {
@@ -44,9 +58,12 @@ class BooksApp extends React.Component {
           // no search results
           searchBooks = [];
         }
-
-        // save results
-        this.setState({ searchBooks: searchBooks });
+        
+        // check if query is the latest search, then update results
+        if (this.state.query === query) {
+          // save results
+          this.setState({ searchBooks: searchBooks });
+        }
       })
       .catch((e) => {
         console.log(e);
@@ -56,6 +73,7 @@ class BooksApp extends React.Component {
   clearSearch = () => {
     this.setState({
       searchBooks: [],
+      query: ''
     });
   };
 
@@ -87,8 +105,9 @@ class BooksApp extends React.Component {
             <Search
               updateBook={this.updateBook}
               searchBooks={this.state.searchBooks}
-              fetchSearchBooks={this.fetchSearchBooks}
               clearSearch={this.clearSearch}
+              query={this.state.query}
+              updateQuery={this.updateQuery}
             />
           )}
         />
